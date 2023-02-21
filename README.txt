@@ -24,10 +24,7 @@ Initializing your local development environment:
 		i. for example: On my system, outside our projects repo and virtual environment (venv), I have installed a JSON parsing library
 			My project will not have dependencies on this JSON parser, so I create a venv where I install the following libraries: webpack, and Django. Once activated,
 			my venv restricts the libraries that my code can access strictly to the ones installed in my venv, those being webpack and Django. 
-	c. Once inside your local repo that you've cloned, enter the following command:
-		i. "python -m venv <your projects file path> venv"
-		ii. this will create the venv that you should always use when developing and testing, but it does not activate it. All the code related to it is in the venv folder in our repo now.
-	d. In order to activate your venv, we are going to call its activate script, which resides among other useful scripts (which we probably won't use) inside the Scripts folder in venv.
+	b. In order to activate your venv, we are going to call its activate script, which resides among other useful scripts (which we probably won't use) inside the Scripts folder in venv.
 		i. Depending on where you are in the file directory this command will change as all its doing is telling the computer to run whatever is at that location
 			1. side note: this may only work on Windows, if you don't use windows, just double click the activate script in the Scripts folder under venv
 		ii. If you are in the root directory of your local repo, the command will look like this:
