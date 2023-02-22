@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Dragon</title>
+        <link href="./stylesheet.css" rel="stylesheet">
+    </head>
+    <body>
+        <div class="wrapper">
+            <h1>Welcome to Dragon Check-in System!</h1>
+            <h2>Enter your username and password</h2>
+
+            <p>Username:  <input type="text" id="username-input"></p>
+            <p>Password:  <input type="text" id="password-input"></p>
+            <p id="username-error-message" style="display: none; color: red;">Please enter a username</p>
+            <p id="password-error-message" style="display: none; color: red;">Please enter a password</p>
+            <button class="checkInButton" onclick="storeName(); checkInput();">Check in</button>
+            <br>
+            <a class="newUser" href="register.html">I am a new user</a>
+
+        </div>
+        <script src="./script.js"></script>
+    </body>
+</html>
