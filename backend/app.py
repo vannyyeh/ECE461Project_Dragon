@@ -13,5 +13,3 @@ def test():
 def testGet():
     getData = {"msg": "no shot, a json message?"}
     return getData
-
-#todo: Alright Milton, this 

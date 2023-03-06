@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
+import { InputBox } from './inputs/InputBox';
+import { CheckInButton, Header1, Header2, PageDiv, Wrapper } from './styles/GlobalStyles';
 
 export const LandingPage = () => {
+	const [username, setUsername] = useState('');
+	const [password, setPassword] = useState('');
+
 	let navigate = useNavigate();
 
 	function registerNavigation() {
@@ -21,18 +25,19 @@ export const LandingPage = () => {
 					<h2>Enter your username and password</h2>
 
 					<p>
-						Username: <input type='text' id='username-input' />
+						Username: <InputBox value={username} setValue={setUsername} />
 					</p>
 					<p>
-						Password: <input type='text' id='password-input' />
+						Password: <InputBox value={password} setValue={setPassword} />
 					</p>
+
 					<p id='username-error-message' style={{ display: 'none', color: 'red' }}>
 						Please enter a username
 					</p>
 					<p id='password-error-message' style={{ display: 'none', color: 'red' }}>
 						Please enter a password
 					</p>
-					<CheckInButton onclick='storeName(); checkInput();'>Check in</CheckInButton>
+					<CheckInButton>Check in</CheckInButton>
 					<br />
 					<a style={{ cursor: 'pointer' }} onClick={() => registerNavigation()}>
 						I am a new user
@@ -43,39 +48,3 @@ export const LandingPage = () => {
 		</PageDiv>
 	);
 };
-
-const PageDiv = styled.div`
-	font-size: 24px;
-	text-align: center;
-`;
-
-const Header1 = styled.div`
-	font-family: 'Copperplate', 'Courier New', sans-serif;
-	font-size: 30px;
-	color: #663399;
-	text-align: center;
-`;
-
-const Header2 = styled.div`
-	font-family: 'Monaco', 'Courier New', monospace;
-	font-size: 22px;
-	text-align: center;
-`;
-
-const Wrapper = styled.div`
-	background: #ffe4b5;
-	margin: 24px auto;
-	padding: 24px;
-	border-radius: 20px;
-	width: 60%;
-`;
-
-const CheckInButton = styled.div`
-	display: inline-block;
-	padding: 12px 24px;
-	background: linear-gradient(to bottom right, #e66465, #9198e5);
-	color: white;
-	border-radius: 15px;
-	box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
-	transition: all 0.3s ease;
-`;
