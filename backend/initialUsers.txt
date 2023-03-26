@@ -1,0 +1,9 @@
+username: sampleUsername
+userID: 123
+password: samplePassword
+projects: projectID1,projectID2,projectID3
+
+username: sampleUsername2
+userID: 456
+password: samplePassword2
+projects: projectID2,projectID3,projectID4

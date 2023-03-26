@@ -14,6 +14,39 @@ class Database:
     # Initialization End
     # User Dictionary Manipulation Begin
 
+    def parse_users(self, filename):
+        file = open(filename, 'r')
+
+        accounts = []
+
+        username = ""
+        userID = 0
+        password = ""
+        projectsArray = []
+
+        # step through each line of file
+        # if an ! is reached, the next 4 lines will be a new user
+        for line in file:
+            if(line != ""):
+                splitLine = line.split()
+                command = splitLine[0]
+
+                if(command == ("username:")):
+
+                if (command == ("userID:")):
+
+                if (command == ("password:")):
+
+                if (command == ("projects:")):
+
+
+        parsed = databaseModule.User(username, userID, password, projectsArray)
+        accounts.append(parsed)
+
+
+        file.close()
+        return accounts
+
     def add_user(self, user):
 
         if self.user_existence(user):
