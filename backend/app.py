@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, Response
 import pymongo
 import os
 import json
@@ -33,7 +33,7 @@ def testGet():
     getData = {"msg": "no shot, a json message?"}
     return getData
 
-@app.route('/join/<int:projectID>/<string:userID>')
+@app.route('/joinProject/<int:projectID>/<string:userID>')
 def joinProject(projectId, userId):
     all_projects = projects.find({"projectID": projectId})
 
@@ -47,7 +47,7 @@ def joinProject(projectId, userId):
         return f'{projectId} not exist'
 
 
-@app.route('/leave/<int:projectID>/<string:userID>')
+@app.route('/leaveProject/<int:projectID>/<string:userID>')
 def leaveProject(projectId, userId):
     all_projects = projects.find({"projectID": projectId})
 
@@ -63,13 +63,12 @@ def leaveProject(projectId, userId):
         return f'{projectId} does not exist'
 
 
-@app.route("/createnewproject/<string:projectID>/<string:projectName>/<string:userID>")
+@app.route("/createNewProject/<string:projectID>/<string:projectName>/<string:userID>")
 def createNewProject(projectID, projectName, userID):
     new_project= {
         'ProjectID': projectID,
         'ProjectName': projectName,
-        'Users': userID,
-        'HWSets': {'HWSet1': 0, 'HWSet2': 0},
+        'Users': userID
     }
 
     if projects.find({"ProjectID": projectID}) != None:
@@ -82,3 +81,20 @@ def createNewProject(projectID, projectName, userID):
         return{
             f'New {projectName} lunched!'
         }
+
+@app.route("/validateLogin/<string:username>/<string:userID>", methods=["GET"])
+def checkLoginAttempt(username, password, userID):
+    try:
+        targetUser = users.find({"username": username, "password": password, "userID": userID})
+        return json.dumps(True)
+    except Exception as ex:
+        print(ex)
+        return json.dumps(False)
+
+@app.route("createUser/<string:username>/<string:userID>", methods=["POST"])
+def createUser(username, password, userID, projects):
+    try:
+
+    except Exception as ex:
+        print(ex)
+        return json.dumps(False)
