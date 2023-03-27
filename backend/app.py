@@ -33,7 +33,7 @@ def testGet():
     getData = {"msg": "no shot, a json message?"}
     return getData
 
-@flask_app.route('/join/<int:projectID>/<string:userID>')
+@app.route('/join/<int:projectID>/<string:userID>')
 def joinProject(projectId, userId):
     all_projects = projects.find({"projectID": projectId})
 
@@ -47,7 +47,7 @@ def joinProject(projectId, userId):
         return f'{projectId} not exist'
 
 
-@flask_app.route('/leave/<int:projectID>/<string:userID>')
+@app.route('/leave/<int:projectID>/<string:userID>')
 def leaveProject(projectId, userId):
     all_projects = projects.find({"projectID": projectId})
 
