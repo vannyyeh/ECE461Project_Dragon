@@ -14,6 +14,90 @@ class Database:
     # Initialization End
     # User Dictionary Manipulation Begin
 
+    def parse_users(self, filename):
+        file = open(filename, 'r')
+
+        accounts = []
+
+        username = ""
+        userID = 0
+        password = ""
+        projectsArray = []
+
+        for line in file:
+            if(line != ""):
+                splitLine = line.split()
+                command = splitLine[0]
+
+                if(command == ("username:")):
+                    username = splitLine[1]
+                if (command == ("userID:")):
+                    userID = splitLine[1]
+                if (command == ("password:")):
+                    password = splitLine[1]
+                if (command == ("projects:")):
+                    projectsArray = splitLine[1].split(',')
+                    parsed = databaseModule.User(username, userID, password, projectsArray)
+                    accounts.append(parsed)
+                    # add to the array of
+        file.close()
+        return accounts
+
+    def parse_HWSets(self, filename):
+        file = open(filename, 'r')
+
+        allHW = []
+
+        name = ""
+        capacity = 0
+        availability = 0
+        requested = 0
+
+        for line in file:
+            if(line != ""):
+                splitLine = line.split()
+                command = splitLine[0]
+
+                if(command == ("name:")):
+                    name = splitLine[1]
+                if (command == ("capacity:")):
+                    capacity = int(splitLine[1])
+                    availability = capacity
+                    parsed = databaseModule.HardwareSet(name, capacity, availability, requested)
+                    allHW.append(parsed)
+                    # add to the array of
+        file.close()
+        return allHW
+
+    def parse_projects(self, filename):
+        file = open(filename, 'r')
+
+        projectList = []
+
+        name = ""
+        desc = ""
+        projectID = ""
+        users = []
+
+        for line in file:
+            if(line != ""):
+                splitLine = line.split()
+                command = splitLine[0]
+
+                if(command == ("name:")):
+                    name = splitLine[1]
+                if (command == ("desc:")):
+                    desc = line.lstrip("desc: ")
+                if (command == ("projectID:")):
+                    projectID = splitLine[1]
+                if (command == ("users:")):
+                    projectsArray = splitLine[1].split(',')
+                    parsed = databaseModule.Project(name, desc, projectID, users)
+                    projectList.append(parsed)
+                    # add to the array of projects
+        file.close()
+        return projectList
+
     def add_user(self, user):
 
         if self.user_existence(user):

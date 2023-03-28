@@ -1,0 +1,5 @@
+name: sampleHW1
+capacity: 300
+
+name: sampleHW2
+capacity: 200
