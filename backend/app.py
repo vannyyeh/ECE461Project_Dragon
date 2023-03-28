@@ -1,8 +1,8 @@
-from flask import Flask, Response
+from flask import Flask, jsonify
 import pymongo
 import os
 import json
-from bson import json_util
+
 app = Flask(__name__)
 
 try:
@@ -24,30 +24,33 @@ if __name__ == "__main__":
 
 
 
-@app.route("/") #root
-def test():
-    return "NO SHOT, WOAH A FLASK APP??!?!"
-
-@app.route("/get_this", methods=['GET'])
-def testGet():
-    getData = {"msg": "no shot, a json message?"}
-    return getData
-
-@app.route('/joinProject/<int:projectID>/<string:userID>')
+@app.route('/joinProject/<int:projectID>/<string:userID>', methods=['PATCH'])
 def joinProject(projectId, userId):
-    all_projects = projects.find({"projectID": projectId})
+    project = projects.find({"projectID": projectId})
 
-    if all_projects:
-        users = all_projects.get('userID', [])
+    response = None
+    if project:
+        users = project.get('userID', [])
         if userId not in users:
             users.append(userId)
-            all_projects.update_one({"projectID": projectId}, {"$set": {"userID": users}})
-        return f'Joined {projectId}'
+            project.update_one({"projectID": projectId}, {"$set": {"userID": users}})
+
+        response = jsonify(
+            msg="Joined {projectId}",
+            status=200
+        )
+
     else:
-        return f'{projectId} not exist'
+        response = jsonify(
+            msg="{projectId} not exist",
+            status=204
+        )
+
+    response.headers.add('Access-Control-Allow-Origin', 'http://localhost')    
+    return response
 
 
-@app.route('/leaveProject/<int:projectID>/<string:userID>')
+@app.route('/leaveProject/<int:projectID>/<string:userID>', methods=['PATCH'])
 def leaveProject(projectId, userId):
     all_projects = projects.find({"projectID": projectId})
 
@@ -63,24 +66,34 @@ def leaveProject(projectId, userId):
         return f'{projectId} does not exist'
 
 
-@app.route("/createNewProject/<string:projectID>/<string:projectName>/<string:userID>")
+@app.route("/createNewProject/<string:projectID>/<string:projectName>/<string:userID>", methods=['POST'])
 def createNewProject(projectID, projectName, userID):
+
+    print("creating new project")
+
+    response = None
     new_project= {
-        'ProjectID': projectID,
-        'ProjectName': projectName,
-        'Users': userID
+        'projectID': projectID,
+        'projectName': projectName,
+        'users': userID
     }
 
-    if projects.find({"ProjectID": projectID}) != None:
-        return{
-            'error' :'project already exits'
-        }
+    if projects.find({"ProjectID": projectID}) == None:
+        projects.insert_one(new_project)
+        response = jsonify(
+            msg="New {projectName} lunched!",
+            status=200
+        )
 
     else:
-        projects.insert_one(new_project)
-        return{
-            f'New {projectName} lunched!'
-        }
+        response = jsonify(
+            msg="project already exits",
+            status=204
+        )
+    
+    response.headers.add('Access-Control-Allow-Origin', 'http://localhost')    
+    return response
+
 
 @app.route("/validateLogin/<string:username>/<string:userID>", methods=["GET"])
 def checkLoginAttempt(username, password, userID):
@@ -91,10 +104,33 @@ def checkLoginAttempt(username, password, userID):
         print(ex)
         return json.dumps(False)
 
-@app.route("createUser/<string:username>/<string:userID>", methods=["POST"])
-def createUser(username, password, userID, projects):
-    try:
 
-    except Exception as ex:
-        print(ex)
-        return json.dumps(False)
+@app.route("/createUser/<string:username>/<string:userID>", methods=["POST"])
+def createUser(username, password, userID):
+
+    print("creating new project")
+
+    response = None
+    new_user= {
+        'userID': userID,
+        'username': username,
+        'password': password
+    }
+
+    if users.find({"userID": userID}) == None:
+        users.insert_one(new_user)
+        response = jsonify(
+            msg="New user added!",
+            status=201
+        )
+
+    else:
+        response = jsonify(
+            msg="user with userID {userID} already exits",
+            status=204
+        )
+    
+    response.headers.add('Access-Control-Allow-Origin', 'http://localhost')    
+    return response
+
+    
