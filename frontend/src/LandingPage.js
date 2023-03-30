@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { InputBox } from './inputs/InputBox';
 import { CheckInButton, Header1, Header2, PageDiv, Wrapper } from './styles/GlobalStyles';
 
 export const LandingPage = () => {
 	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
+
 
 	let navigate = useNavigate();
 
@@ -37,7 +38,9 @@ export const LandingPage = () => {
 					<p id='password-error-message' style={{ display: 'none', color: 'red' }}>
 						Please enter a password
 					</p>
-					<CheckInButton>Check in</CheckInButton>
+					<Link to="./projects">
+					    <CheckInButton>Check in</CheckInButton>
+					</Link>
 					<br />
 					<a style={{ cursor: 'pointer' }} onClick={() => registerNavigation()}>
 						I am a new user
