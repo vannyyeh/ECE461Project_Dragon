@@ -56,4 +56,13 @@ export const WrapperRegister = styled.div`
 	padding: 24px;
 	border-radius: 20px;
 	width: 60%;
+<<<<<<< Updated upstream
+=======
+`;
+
+export const InputBoxContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+>>>>>>> Stashed changes
 `;
