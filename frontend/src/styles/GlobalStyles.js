@@ -39,12 +39,16 @@ export const CheckInButton = styled.div`
 
 export const FormRegister = styled.div`
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     alignItems: center;
     marginTop: 20px;
     minWidth: 250px;
-    padding: 30px 20px;
+    padding: 10px 20px;
     gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+}
 `;
 
 export const WrapperRegister = styled.div`
