@@ -57,3 +57,9 @@ export const WrapperRegister = styled.div`
 	border-radius: 20px;
 	width: 60%;
 `;
+
+export const InputBoxContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
