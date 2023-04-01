@@ -15,13 +15,13 @@ export const Register = () => {
 	}
 
 	const checkStrongPassword = (password) => {
-		if (password.lenth >= 12) {
+		if (password.length >= 12) {
 			if (/^[A-Za-z0-9]*$/.test(password)) {
-				console.log('strong password');
+				console.log('It is a strong password');
 				return true;
 			}
 		}
-		console.log('what');
+		console.log('not strong');
 		return false;
 	};
 
@@ -36,8 +36,15 @@ export const Register = () => {
 				console.log("Passwords don't match!");
 			}
 		} else {
-			console.log('what');
-			console.log(password === confirmPassword);
+		    fetch(`/register/${username}/${userId}/${password}/${confirmPassword}`)
+            .then((response) => response.json())
+            .then((data) => {
+             if (data.response === 'New user created') {
+               setUser(data.userId)
+                  localStorage.setItem('user', data.userId)
+                }
+                alert(data.response)
+            })
 		}
 	};
 
@@ -63,19 +70,40 @@ export const Register = () => {
 				<div>
 					<h1>Welcome to Registration</h1>
 					<form onSubmit={handleSubmit}>
-						<FormRegister>
+						<FormRegister >
+						    <p>
+                            Enter User ID:
+                            </p>
 							<TextField label='User ID' value={userId} onChange={handleUserIdChange} />
+						</FormRegister>
+						<FormRegister>
+							<p>
+                            Enter Username:
+                            </p>
 							<TextField label='Username' value={username} onChange={handleUsernameChange} />
+						</FormRegister>
+						<FormRegister>
+							<p>
+                            Enter password:
+                            </p>
 							<TextField label='Password' value={password} onChange={handlePasswordChange} />
+						</FormRegister>
+						<FormRegister>
+							<p>
+                            Confirm your password:
+                            </p>
 							<TextField
 								label='Confirm Password'
 								value={confirmPassword}
 								onChange={handleConfirmPasswordChange}
 							/>
-							<Button type='submit' variant='contained' color='primary'>
+						</FormRegister>
+						<FormRegister>
+							<Button type='submit' variant='contained' color='primary' >
 								Register New Account
 							</Button>
 						</FormRegister>
+
 					</form>
 					<a style={{ cursor: 'pointer' }} onClick={() => navigateHome()}>
 						Back to Home Page
