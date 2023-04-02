@@ -7,7 +7,6 @@ export const App = () => {
 
   return (
     <div className="App">
-      
       <Projects/>
     </div>
   );
