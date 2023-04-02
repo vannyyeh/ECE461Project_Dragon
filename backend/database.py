@@ -151,7 +151,7 @@ class Database:
 
     def user_existence(self, userID):
 
-        user = self.__usersCollections.find({"userID": userID})
+        user = self.__usersCollections.find_one({"userID": userID})
 
         if user:
             return True
@@ -188,7 +188,7 @@ class Database:
 
         if userExistance:
             # user exists
-            response = self.__usersCollections.find({"userID": userID})
+            response = self.__usersCollections.find_one({"userID": userID})
             print(response)
 
             return response
@@ -213,13 +213,6 @@ class Database:
         else:
             return False
 
-    def find_hardware_set(self, hardwareSet):
-
-        if self.hardware_set_existence(hardwareSet):
-            return self.__hardwareSets.get(hardwareSet.get_hw_name())
-        else:
-            return False
-
     def delete_hardware_set(self, hardwareSet):
 
         if self.hardware_set_existence(hardwareSet):
@@ -241,26 +234,45 @@ class Database:
     # HardwareSet Dictionary Manipulation End
     # Project Dictionary Manipulation Begin
 
-    def add_project(self, project):
+    def add_project(self, name, desc, projectID, users):
 
-        if self.project_existence(project):
-            return False
+
+        response = None
+
+        new_project = {
+            'name': name,
+            'desc': desc,
+            'projectID': projectID,
+            'users': users
+        }
+
+        projectExistance = self.project_existence(projectID)
+
+        if projectExistance:
+            # user already exists with that ID
+
+            response = jsonify(
+                msg="Project " + projectID + " already exists",
+                status=204
+            )
+            return response
         else:
-            self.__projectList[project.get_projectID()] = project
+            # no user with that ID
+
+            self.__usersCollections.insert_one(new_project)
+
+            response = jsonify(
+                msg="Project " + projectID + " added",
+                status=201
+            )
+            return response
 
     def project_existence(self, projectID):
 
-        project = self.__projectsCollections.find({"projectID": projectID})
+        project = self.__projectsCollections.find_one({"projectID": projectID})
 
         if project:
             return True
-        else:
-            return False
-
-    def find_project(self, project):
-
-        if self.project_existence(project):
-            return self.__projectList.get(project.get_projectID())
         else:
             return False
 
@@ -285,48 +297,80 @@ class Database:
     def user_join_project(self, projectID, userID):
         response = None
 
+        userExistance = self.user_existence(userID)
         projectExistance = self.project_existence(projectID)
 
-        if projectExistance:
-            project = self.__projectsCollections.find({"projectID": projectID})
-            print(project)
-            allowedUsers = project.get('userID', [])
-            if userID not in self.__usersCollections:
-                # add user to allowed users
-                allowedUsers.append(userID)
-                project.update_one({"projectID": projectID}, {"$set": {"userID": allowedUsers}})
-
+        if not userExistance:
+            # user does not exist
             response = jsonify(
-                msg="Joined " + projectID,
-                status=200
+                msg=userID + " does not exist",
+                status=204
             )
+
+        if projectExistance:
+            user = self.__usersCollections.find_one({"userID": userID})
+            print(user)
+            acceptableUsers = self.__projectsCollections.find_one({"projectID": projectID}).get("userIDs")
+
+            if userID in acceptableUsers:
+                # authorized user
+
+                joinedProjects = user.get('projects', [])
+                # add project to user projects
+                joinedProjects.append(projectID)
+                user.update_one({"userID": userID}, {"$set": {"projects": joinedProjects}})
+
+                response = jsonify(
+                    msg=userID + " Joined " + projectID,
+                    status=200
+                )
+                return response
+
+            else:
+                # user is not authorized
+                response = jsonify(
+                    msg=userID + + " Not Authorized to Join " + projectID,
+                    status=401
+                )
+                return response
 
         else:
             response = jsonify(
                 msg=projectID + " does not exist",
                 status=204
             )
-
-        return response
+            return response
 
     def user_leave_project(self, projectID, userID):
         response = None
 
+        userExistance = self.user_existence(userID)
         projectExistance = self.project_existence(projectID)
 
+        if not userExistance:
+            # user does not exist
+            response = jsonify(
+                msg=userID + " does not exist",
+                status=204
+            )
+
+            return response
+
         if projectExistance:
-            project = self.__projectsCollections.find({"projectID": projectID})
-            print(project)
-            allowedUsers = project.get('userID', [])
-            if userID in self.__usersCollections:
-                # remove user to allowed users
-                allowedUsers.remove(userID)
-                project.update_one({"projectID": projectID}, {"$set": {"userID": allowedUsers}})
+
+            user = self.__usersCollections.find_one({"userID": userID})
+            print(user)
+            joinedProjects = user.get('projects', [])
+            # remove project from user projects
+            joinedProjects.remove(projectID)
+            user.update_one({"userID": userID}, {"$set": {"projects": joinedProjects}})
 
             response = jsonify(
-                msg="Left " + projectID,
+                msg=userID + " Left " + projectID,
                 status=200
             )
+
+            return response
 
         else:
             response = jsonify(
@@ -334,4 +378,4 @@ class Database:
                 status=204
             )
 
-        return response
+            return response

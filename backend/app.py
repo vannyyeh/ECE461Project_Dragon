@@ -27,42 +27,47 @@ def leave_project(projectId, userId):
     return response
 
 
-@app.route("/create_new_project/<string:projectID>/<string:projectName>/<string:userID>", methods=['POST'])
-def create_new_project(projectID, desc, projectName, userID):
-
+@app.route("/create_new_project/<string:projectName>/<string:projectID>/", methods=['POST'])
+def create_new_project(projectName, desc, projectID, users):
     print("creating new project")
-
-    response = None
-    new_project= {
-        'projectID': projectID,
-        'desc': desc,
-        'projectName': projectName,
-        'users': userID
-    }
-
-    if projects.find({"ProjectID": projectID}) == None:
-        projects.insert_one(new_project)
-        response = jsonify(
-            msg="New {projectName} lunched!",
-            status=200
-        )
-
-    else:
-        response = jsonify(
-            msg="project already exits",
-            status=204
-        )
-    
+    response = ProjectDragon.add_project(projectName, desc, projectID, users)
     response.headers.add('Access-Control-Allow-Origin', 'http://localhost')    
     return response
 
 
 @app.route("/check_login_attempt/<string:username>/<string:userID>", methods=["GET"])
 def check_login_attempt(username, password, userID):
-    response = jsonify(
-        msg=userID + " not exist",
-        status=204
-    )
+    response = None
+    targetUser = ProjectDragon.get_user(userID)
+
+    if targetUser is not None:
+
+        correctUsername = username == targetUser.get(str(username))
+        correctPassword = password == targetUser.get(str(password))
+        correctLogin = correctUsername and correctPassword
+
+        if correctLogin:
+            response = jsonify(
+                msg="Login Success",
+                result=True,
+                status=200
+            )
+            return response
+        else:
+            response = jsonify(
+                msg="Incorrect Login",
+                result=False,
+                status=400
+            )
+            return response
+
+    else:
+        response = jsonify(
+            msg=userID + " does not exist",
+            result=False,
+            status=204
+        )
+        return response
 
 @app.route("/create_user/<string:username>/<string:userID>", methods=["POST"])
 def create_user(username, password, userID, projects):
