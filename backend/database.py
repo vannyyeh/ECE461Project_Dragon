@@ -1,3 +1,5 @@
+from flask import Flask, jsonify
+import json
 import pymongo
 import databaseModule
 
@@ -5,11 +7,28 @@ import databaseModule
 class Database:
 
     # Initialization Begins
-    def __init__(self):
+    def __init__(self, serverURL):
 
-        self.__accounts = {}
-        self.__hardwareSets = {}
-        self.__projectList = {}
+        self. __mongodbClient = None
+        self.__db = None
+        self.__hwCollections = None
+        self.__usersCollections = None
+        self.__projectsCollections = None
+
+        try:
+            # setup mongodb
+            self.__mongodbClient = pymongo.MongoClient(
+                serverURL,
+                serverSelectionTimeoutMS=1000)
+            self.__db = self.__mongodbClient.ProjectDragon
+            self.__hwCollections = self.__db["HardwareSets"]
+            self.__usersCollections = self.__db["Users"]
+            self.__projectsCollections = self.__db["Projects"]
+
+            self.__mongodbClient.server_info()  # to Trigger except if needed
+
+        except:
+            print("Error Connecting to Database")
 
     # Initialization End
     # User Dictionary Manipulation Begin
@@ -43,7 +62,7 @@ class Database:
         file.close()
         return accounts
 
-    def parse_HWSets(self, filename):
+    def parse_hwSets(self, filename):
         file = open(filename, 'r')
 
         allHW = []
@@ -98,44 +117,84 @@ class Database:
         file.close()
         return projectList
 
-    def add_user(self, user):
+    def add_user(self, username, password, userID, projects):
 
-        if self.user_existence(user):
-            return False
+        response = None
+
+        new_user = {
+            'userID': userID,
+            'username': username,
+            'password': password,
+            'projects': projects
+        }
+
+        userExistance = self.user_existence(userID)
+
+        if userExistance:
+            # user already exists with that ID
+
+            response = jsonify(
+                msg="User " + userID + " already exists",
+                status=204
+            )
+            return response
         else:
-            self.__accounts[user.get_userID()] = user
+            # no user with that ID
 
-    def user_existence(self, user):
+            self.__usersCollections.insert_one(new_user)
 
-        if user.get_userID() in self.__accounts.keys():
+            response = jsonify(
+                msg="User " + userID + " added",
+                status=201
+            )
+            return response
+
+    def user_existence(self, userID):
+
+        user = self.__usersCollections.find({"userID": userID})
+
+        if user:
             return True
         else:
             return False
 
-    def find_user(self, user):
+    def delete_user(self, userID):
+        response = None
 
-        if self.user_existence(user):
-            return self.__accounts.get(user.get_userID())
+        userExistance = self.user_existence(userID)
+
+        if userExistance:
+            # user exists with that ID
+
+            user = self.__usersCollections.delete({"userID": userID})
+
+            response = jsonify(
+                msg="User " + userID + " deleted",
+                status=200
+            )
+            return response
         else:
-            return False
+            # no user with that ID
 
-    def delete_user(self, user):
-
-        if self.user_existence(user):
-            del self.__accounts[user.get_userID()]
-        else:
-            return False
+            response = jsonify(
+                msg="User " + userID + " does not exist",
+                status=204
+            )
+            return response
 
     def get_user(self, userID):
+        response = None
+        userExistance = self.user_existence(userID)
 
-        try:
-            user = self.__accounts[userID]
-            return user
-        except KeyError:
-            return False
+        if userExistance:
+            # user exists
+            response = self.__usersCollections.find({"userID": userID})
+            print(response)
 
-    def get_accounts(self):
-        return self.__accounts
+            return response
+        else:
+            # no user exists
+            return response
 
     # User Dictionary Manipulation End
     # HardwareSet Dictionary Manipulation Begin
@@ -189,9 +248,11 @@ class Database:
         else:
             self.__projectList[project.get_projectID()] = project
 
-    def project_existence(self, project):
+    def project_existence(self, projectID):
 
-        if project.get_projectID() in self.__projectList.keys():
+        project = self.__projectsCollections.find({"projectID": projectID})
+
+        if project:
             return True
         else:
             return False
@@ -220,3 +281,57 @@ class Database:
 
     def get_project_lists(self):
         return self.__projectList
+
+    def user_join_project(self, projectID, userID):
+        response = None
+
+        projectExistance = self.project_existence(projectID)
+
+        if projectExistance:
+            project = self.__projectsCollections.find({"projectID": projectID})
+            print(project)
+            allowedUsers = project.get('userID', [])
+            if userID not in self.__usersCollections:
+                # add user to allowed users
+                allowedUsers.append(userID)
+                project.update_one({"projectID": projectID}, {"$set": {"userID": allowedUsers}})
+
+            response = jsonify(
+                msg="Joined " + projectID,
+                status=200
+            )
+
+        else:
+            response = jsonify(
+                msg=projectID + " does not exist",
+                status=204
+            )
+
+        return response
+
+    def user_leave_project(self, projectID, userID):
+        response = None
+
+        projectExistance = self.project_existence(projectID)
+
+        if projectExistance:
+            project = self.__projectsCollections.find({"projectID": projectID})
+            print(project)
+            allowedUsers = project.get('userID', [])
+            if userID in self.__usersCollections:
+                # remove user to allowed users
+                allowedUsers.remove(userID)
+                project.update_one({"projectID": projectID}, {"$set": {"userID": allowedUsers}})
+
+            response = jsonify(
+                msg="Left " + projectID,
+                status=200
+            )
+
+        else:
+            response = jsonify(
+                msg=projectID + " does not exist",
+                status=204
+            )
+
+        return response

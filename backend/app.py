@@ -2,78 +2,40 @@ from flask import Flask, jsonify
 import pymongo
 import os
 import json
+import database
 
 app = Flask(__name__)
 
-try:
-    # setup mongodb
-    mongodbClient = pymongo.MongoClient(
-        "mongodb+srv://ProjectDragonUser:Z62xa7Vhmw3kHSkd@cluster0.bpaif8q.mongodb.net/?retryWrites=true&w=majority", serverSelectionTimeoytMS = 1000)
-    db = mongodbClient.ProjectDragon
-    hwsets = db["HardwareSets"]
-    users = db["Users"]
-    projects = db["Projects"]
-
-    mongodbClient.server_info() # to Trigger except if needed
-
-except:
-    print("Error Connecting to Database")
+ProjectDragon = database.Database("mongodb+srv://ProjectDragonUser:Z62xa7Vhmw3kHSkd@cluster0.bpaif8q.mongodb.net/?retryWrites=true&w=majority")
 
 if __name__ == "__main__":
     app.run()
 
 
 
-@app.route('/joinProject/<int:projectID>/<string:userID>', methods=['PATCH'])
-def joinProject(projectId, userId):
-    project = projects.find({"projectID": projectId})
-
-    response = None
-    if project:
-        users = project.get('userID', [])
-        if userId not in users:
-            users.append(userId)
-            project.update_one({"projectID": projectId}, {"$set": {"userID": users}})
-
-        response = jsonify(
-            msg="Joined {projectId}",
-            status=200
-        )
-
-    else:
-        response = jsonify(
-            msg="{projectId} not exist",
-            status=204
-        )
-
-    response.headers.add('Access-Control-Allow-Origin', 'http://localhost')    
+@app.route('/join_project/<int:projectID>/<string:userID>', methods=['PATCH'])
+def join_project(projectId, userId):
+    response = ProjectDragon.user_join_project(projectId, userId)
+    response.headers.add('Access-Control-Allow-Origin', 'http://localhost')
     return response
 
 
-@app.route('/leaveProject/<int:projectID>/<string:userID>', methods=['PATCH'])
-def leaveProject(projectId, userId):
-    all_projects = projects.find({"projectID": projectId})
-
-    if all_projects:
-        users = all_projects.get('userID', [])
-        if userId in users:
-            users.remove(userId)
-            all_projects.update_one({"projectID": projectId}, {"$set": {"userID": users}})
-            return f'{userId} left {projectId}'
-        else:
-            return f'{userId} is not a user in project {projectId}'
-    else:
-        return f'{projectId} does not exist'
+@app.route('/leave_project/<int:projectID>/<string:userID>', methods=['PATCH'])
+def leave_project(projectId, userId):
+    response = ProjectDragon.user_leave_project(projectId, userId)
+    response.headers.add('Access-Control-Allow-Origin', 'http://localhost')
+    return response
 
 
-@app.route("/createNewProject/<string:projectID>/<string:projectName>/<string:userID>", methods=['POST'])
-def createNewProject(projectID, projectName, userID):
+@app.route("/create_new_project/<string:projectID>/<string:projectName>/<string:userID>", methods=['POST'])
+def create_new_project(projectID, desc, projectName, userID):
 
     print("creating new project")
 
     response = None
     new_project= {
         'projectID': projectID,
+        'desc': desc,
         'projectName': projectName,
         'users': userID
     }
@@ -95,42 +57,18 @@ def createNewProject(projectID, projectName, userID):
     return response
 
 
-@app.route("/validateLogin/<string:username>/<string:userID>", methods=["GET"])
-def checkLoginAttempt(username, password, userID):
-    try:
-        targetUser = users.find({"username": username, "password": password, "userID": userID})
-        return json.dumps(True)
-    except Exception as ex:
-        print(ex)
-        return json.dumps(False)
+@app.route("/check_login_attempt/<string:username>/<string:userID>", methods=["GET"])
+def check_login_attempt(username, password, userID):
+    response = jsonify(
+        msg=userID + " not exist",
+        status=204
+    )
 
-
-@app.route("/createUser/<string:username>/<string:userID>", methods=["POST"])
-def createUser(username, password, userID):
-
-    print("creating new project")
-
-    response = None
-    new_user= {
-        'userID': userID,
-        'username': username,
-        'password': password
-    }
-
-    if users.find({"userID": userID}) == None:
-        users.insert_one(new_user)
-        response = jsonify(
-            msg="New user added!",
-            status=201
-        )
-
-    else:
-        response = jsonify(
-            msg="user with userID {userID} already exits",
-            status=204
-        )
-    
-    response.headers.add('Access-Control-Allow-Origin', 'http://localhost')    
+@app.route("/create_user/<string:username>/<string:userID>", methods=["POST"])
+def create_user(username, password, userID, projects):
+    print("creating new user")
+    response = ProjectDragon.add_user(username, password, userID, projects)
+    response.headers.add('Access-Control-Allow-Origin', 'http://localhost')
     return response
 
     
