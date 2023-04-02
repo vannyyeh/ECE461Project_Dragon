@@ -1,16 +1,34 @@
 from flask import Flask, jsonify
+from flask_cors import CORS
 import pymongo
 import os
 import json
 import database
 
+
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "*"}})
+
+mongodbClient = None
+db = None
+hwsets = None
+users = None
+projects = None
 
 ProjectDragon = database.Database("mongodb+srv://ProjectDragonUser:Z62xa7Vhmw3kHSkd@cluster0.bpaif8q.mongodb.net/?retryWrites=true&w=majority")
 
 if __name__ == "__main__":
     app.run()
 
+@app.route('/test_backend/<int:projectID>/<string:userID>', methods=['POST'])
+def testBackend(projectID, userID):
+    
+    response = jsonify(
+        msg="" + str(projectID) + ": " + str(userID) + str(mongodbClient),
+        status=200
+    )
+
+    return response
 
 
 @app.route('/join_project/<int:projectID>/<string:userID>', methods=['PATCH'])

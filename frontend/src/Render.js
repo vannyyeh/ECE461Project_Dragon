@@ -11,10 +11,10 @@ export default function Render() {
 		<BrowserRouter>
 			<Routes>
 				<Route exact path='/' element={<LandingPage />} />
+				<Route exact path='/projects' element={<Projects />} />
 				<Route exact path='/register' element={<Register />} />
-				<Route exact path='/userPortal' element={<UserPortal />} />
 				<Route exact path='/testBackend' element={<TestBackend />} />
-				<Route exact path='/projects' element={<App />} />
+				<Route exact path='/userPortal' element={<UserPortal />} />
 				<Route exact path='*' element={<NotFound />} />
 			</Routes>
 		</BrowserRouter>
