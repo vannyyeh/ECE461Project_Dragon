@@ -1,109 +1,187 @@
-import React from 'react';
+import { Button, TextField } from '@mui/material';
+import React, { useState } from 'react';
+import Api from '../Api';
+import styled from 'styled-components';
 
-import { TextField, Button } from '@mui/material';
+const ProjectTab = ({ title, description }) => {
+	const [quantity1, setQuantity1] = useState(50);
+	const [quantity2, setQuantity2] = useState(0);
 
-function HWSet(props) {
-  const [numerator, setNumerator] = React.useState('0');
-  const [capacity, setCapacity] = React.useState('');
-  // const [denominator, setDenominator] = React.useState('100');
-  const [inputValue, setInputValue] = React.useState('');
-  const [updateProjects, setUpdateProjects] = React.useState(false);
+	return (
+		<ProjectTabContainer>
+			<LeftContainer>
+				<CompressText style={{ fontSize: '25px', width: '225px' }}>{title}</CompressText>
+				<CompressText style={{ fontSize: '15px', width: '110px' }}>{description}</CompressText>
+			</LeftContainer>
+			<RightContainer>
+				<div style={{ display: 'flex', flexDirection: 'column', paddingLeft: '25px', fontSize: '25px' }}>
+					<p>HWSet1: {quantity1}/100</p>
+					<p>HWSet2: {quantity2}/100</p>
+				</div>
+				<QuantityHandleContainer>
+					<QuantityHandler quantity={quantity1} setQuantity={setQuantity1} title={title} />
+					<QuantityHandler quantity={quantity2} setQuantity={setQuantity2} title={title} />
+				</QuantityHandleContainer>
+				<JoinLeaveButton title={title} />
+			</RightContainer>
+		</ProjectTabContainer>
+	);
+};
 
-  const handleInputChange = (event) => {
-    setInputValue(event.target.value);
-  };
+const QuantityHandler = ({ quantity, setQuantity, title }) => {
+	const [tempVal, setTempVal] = useState(0);
 
-  const handleCheckIn = () => {
-    if(!props.join){
-        alert('You should join this project first!')
-    }
-    else{
-        fetch(`$/checkin/${projectID}/${hwsetsname}/${numerator}`)
-        .then((response) => response.json())
-        .then((data) => {
-          alert(data.response)
-          setUpdateProjects(!updateProjects)
-        })
+	return (
+		<div style={{ display: 'flex', flexDirection: 'inline', alignItems: 'center', width: '250px' }}>
+			<TextField
+				type='number'
+				style={{ margin: '5px', fontSize: '25px', width: '140px' }}
+				value={tempVal}
+				onChange={(e) => {
+					setTempVal(parseInt(e.target.value));
+				}}
+			/>
+			<CheckButton
+				text={'check in'}
+				tempVal={tempVal}
+				quantity={quantity}
+				setQuantity={setQuantity}
+				inVal={1}
+				title={title}
+			/>
+			<CheckButton
+				text={'check out'}
+				tempVal={tempVal}
+				quantity={quantity}
+				setQuantity={setQuantity}
+				inVal={-1}
+				title={title}
+			/>
+		</div>
+	);
+};
 
-        const newValue = parseInt(numerator) - parseInt(inputValue);
-        setNumerator(newValue < 0 ? '0' : newValue.toString());
-        setInputValue('');
-    }
-  };
+const CheckButton = ({ text, tempVal, quantity, setQuantity, inVal, title }) => {
+	const buttonPress = async () => {
+		setQuantity(parseInt(quantity) + parseInt(inVal) * tempVal);
+		if (tempVal !== 0) {
+			if (parseInt(inVal) === 1) {
+				console.log('sending check in request with ' + title + ' and quantity ' + quantity);
+				console.log(`/check_in/${title}/${tempVal}/`);
+				let res = await Api.get(`/check_in/${title}/${tempVal}/`);
+				alert(res.data.msg);
+			} else {
+				let res = await Api.get(`/check_out/${title}/${tempVal}/`);
+				alert(res.data.msg);
+			}
+		}
+	};
 
-  const handleCheckOut = () => {
-    if(!props.join){
-        alert('You should join this project first!')
-    }
-    else{
-        fetch(`$/checkout/${projectID}/${hwsets}/${numerator}`)
-        .then((response) => response.json())
-        .then((data) => {
-          alert(data.response)
-          setUpdateProjects(!updateProjects)
-        })
+	return (
+		<Button
+			style={{
+				backgroundColor: 'gray',
+				color: 'white',
+				padding: '5px',
+				margin: '4px',
+				borderRadius: '5px',
+				cursor: 'pointer',
+				userSelect: 'none',
+			}}
+			onMouseOver={(e) => (e.target.style.background = 'green')}
+			onMouseLeave={(e) => (e.target.style.background = 'gray')}
+			onClick={() => buttonPress()}
+		>
+			{text}
+		</Button>
+	);
+};
 
+const JoinLeaveButton = ({ title }) => {
+	const [joined, setJoined] = useState(false);
 
-        const newValue = parseInt(numerator) + parseInt(inputValue);
-        setNumerator(newValue > parseInt(denominator) ? denominator : newValue.toString());
-        setInputValue('');
-    }
-  };
+	const buttonPress = async () => {
+		setJoined(!joined);
+		if (!joined) {
+			let res = await Api.get(`/join/${title}/`);
+			alert(res.data.msg);
+		} else {
+			let res = await Api.get(`/leave/${title}/`);
+			alert(res.data.msg);
+		}
+	};
 
-  return (
-    <div className="hwset">
-      <div className="hwset-label">
-        <label className="label">HWSet {props.number}</label>
-        <span className="fraction">{numerator}/{props.capacity}</span>
-      </div>
-      <TextField
-        className="text-field"
-        label="Enter Quantity"
-        variant="outlined"
-        value={inputValue}
-        onChange={handleInputChange}
-      />
-      <Button variant="contained" color="primary" onClick={handleCheckIn}>
-        Check In
-      </Button>
-      <Button variant="contained" color="secondary" onClick={handleCheckOut}>
-        Check Out
-      </Button>
-    </div>
-  );
-}
+	function buttonLeave(e) {
+		if (!joined) {
+			e.target.style.background = 'gray';
+		}
+	}
 
-
-
-function ProjectTab(props) {
-
-  const handleJoinClick = () => {
-    // function to handle Join button click
-    console.log(`Join clicked for project ${props.title}`);
-    fetch(`$/joinProject/${projectID}/${userID}`)
-            .then((response) => response.json())
-            .then((data) => {
-                if (data.response === `Joined ${projectID}`) {
-                    setJoined(true)
-                }
-            alert(data.response)
-            })
-  };
-
-  return (
-    <div className="project-tab">
-      <div className="title">{props.title}</div>
-      <div className="description">{props.description}</div>
-      <div className="join">{props.join}</div>
-      <div className="hwsets">
-        <HWSet number="1:" />
-        <HWSet number="2:" />
-      </div>
-      <Button variant="contained" color="primary" onClick={handleJoinClick}>
-        Join
-      </Button>
-    </div>
-  );
-}
+	return (
+		<Button
+			style={{
+				backgroundColor: 'gray',
+				borderRadius: '5px',
+				color: 'white',
+				cursor: 'pointer',
+				marginLeft: '40px',
+				marginRight: '40px',
+				marginRight: 'auto',
+				padding: '5px',
+				scale: '1.75',
+				userSelect: 'none',
+			}}
+			onMouseOver={(e) => (e.target.style.background = 'green')}
+			onMouseLeave={(e) => buttonLeave(e)}
+			onClick={() => buttonPress()}
+		>
+			{joined ? 'Leave' : 'Join'}
+		</Button>
+	);
+};
 
 export default ProjectTab;
+
+const ProjectTabContainer = styled.div`
+	background-color: antiquewhite;
+	margin: 10px;
+	padding: 5px;
+	display: flex;
+	align-items: center;
+	border: 4px solid black;
+`;
+
+const QuantityHandleContainer = styled.div`
+	display: flex;
+	flex-direction: column;
+	padding-left: 25px;
+	font-size: 25px;
+	marginright: auto;
+`;
+
+const CompressText = styled.div`
+	align-items: center;
+	display: flex;
+	flex-shrink: 1;
+	flex-wrap: wrap;
+	height: 150px;
+	overflow: auto;
+	padding-left: 25px;
+	textalign: center;
+`;
+
+const LeftContainer = styled.div`
+	display: flex;
+	flex-direction: inline;
+	align-items: center;
+	margin-right: auto;
+	margin-left: 25px;
+`;
+
+const RightContainer = styled.div`
+	display: flex;
+	flex-direction: inline;
+	align-items: center;
+	margin-right: 35px;
+	margin-left: auto;
+`;

@@ -2,9 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { LandingPage } from './LandingPage';
 import { Register } from './Register';
-import { TestBackend } from './TestBackend';
-import { UserPortal } from './UserPortal';
-import { App } from './App';
+import Projects from './components/Projects';
 
 export default function Render() {
 	return (
@@ -13,8 +11,6 @@ export default function Render() {
 				<Route exact path='/' element={<LandingPage />} />
 				<Route exact path='/projects' element={<Projects />} />
 				<Route exact path='/register' element={<Register />} />
-				<Route exact path='/testBackend' element={<TestBackend />} />
-				<Route exact path='/userPortal' element={<UserPortal />} />
 				<Route exact path='*' element={<NotFound />} />
 			</Routes>
 		</BrowserRouter>
