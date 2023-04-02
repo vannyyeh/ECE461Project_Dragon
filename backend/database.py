@@ -317,6 +317,14 @@ class Database:
 
                 joinedProjects = user.get('projects', [])
                 # add project to user projects
+
+                if projectID in joinedProjects:
+                    response = jsonify(
+                        msg=projectID + " already in " + userID + " joined projects",
+                        status=204
+                    )
+                    return response
+
                 joinedProjects.append(projectID)
                 user.update_one({"userID": userID}, {"$set": {"projects": joinedProjects}})
 
@@ -362,11 +370,113 @@ class Database:
             print(user)
             joinedProjects = user.get('projects', [])
             # remove project from user projects
+
+            if projectID not in joinedProjects:
+                response = jsonify(
+                    msg=projectID + " not in " + userID + " joined projects",
+                    status=204
+                )
+                return response
+
             joinedProjects.remove(projectID)
             user.update_one({"userID": userID}, {"$set": {"projects": joinedProjects}})
 
             response = jsonify(
                 msg=userID + " Left " + projectID,
+                status=200
+            )
+
+            return response
+
+        else:
+            response = jsonify(
+                msg=projectID + " does not exist",
+                status=204
+            )
+
+            return response
+
+    def unauthrize_user(self, projectID, userID):
+        response = None
+
+        userExistance = self.user_existence(userID)
+        projectExistance = self.project_existence(projectID)
+
+        if not userExistance:
+            # user does not exist
+            response = jsonify(
+                msg=userID + " does not exist",
+                status=204
+            )
+
+            return response
+
+        if projectExistance:
+
+            targetProject = self.__projectsCollections.find_one({"projectID": projectID})
+            print(targetProject)
+            authorizedUsers = targetProject.get('users', [])
+            # remove project from user projects
+
+            if userID not in authorizedUsers:
+                response = jsonify(
+                    msg=userID + " not in " + projectID + " authoized users",
+                    status=204
+                )
+                return response
+
+            authorizedUsers.remove(userID)
+            targetProject.update_one({"projectID": projectID}, {"$set": {"users": authorizedUsers}})
+
+            response = jsonify(
+                msg=userID + " Unauthorized For " + projectID,
+                status=200
+            )
+
+            return response
+
+        else:
+            response = jsonify(
+                msg=projectID + " does not exist",
+                status=204
+            )
+
+            return response
+
+    def authorize_user(self, projectID, userID):
+        response = None
+
+        userExistance = self.user_existence(userID)
+        projectExistance = self.project_existence(projectID)
+
+        if not userExistance:
+            # user does not exist
+            response = jsonify(
+                msg=userID + " does not exist",
+                status=204
+            )
+
+            return response
+
+        if projectExistance:
+
+            targetProject = self.__projectsCollections.find_one({"projectID": projectID})
+            print(targetProject)
+            authorizedUsers = targetProject.get('users', [])
+            # remove project from user projects
+
+            if userID in authorizedUsers:
+                response = jsonify(
+                    msg=userID + " already in " + projectID + " authoized users",
+                    status=204
+                )
+                return response
+
+            authorizedUsers.append(userID)
+            targetProject.update_one({"projectID": projectID}, {"$set": {"users": authorizedUsers}})
+
+            response = jsonify(
+                msg=userID + " Authorized For " + projectID,
                 status=200
             )
 
