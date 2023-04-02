@@ -133,4 +133,32 @@ def createUser(username, password, userID):
     response.headers.add('Access-Control-Allow-Origin', 'http://localhost')    
     return response
 
-    
+
+@app.route('/checkin/<string:projectID>/<string:hwsetsname>/<int:qty>')
+def checkIn_hardware(projectId, hwsetname, qty):
+    hwset_query = {"Name": hwsetname}
+    hwset_document = hwsets.find(hwset_query)
+    available_units = hwset_document["Availability"]
+    capacity_units = hwset_document["Capacity"]
+    project = projects.find_one({"ProjectID": projectId})
+    project_hardware = project['HWSets']
+
+    project = projects.find({"ProjectID": projectId})
+    if qty > capacity_units:
+        qty_checked_in = capacity_units - available_units
+    else:
+        qty_checked_in = qty
+
+
+    projects.update_one({"ProjectID": projectId}, {"$set": {"HWSet": project_hardware}})
+    hwsets.update_one({"Name": hwsetname}, {"$set": {"Availability": qty_checked_in + available_units}})
+
+    return {
+        'projectId': projectId,
+        'hwsetsname': hwsetname,
+        'qty': qty,
+    }
+
+@app.route('/checkout/<string:projectID>/<string:hwsetsname>/<int:qty>')
+def checkOut_hardware(projectId, hwsetname, qty):
+    return 'come back and edit'
