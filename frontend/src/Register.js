@@ -31,28 +31,9 @@ export const Register = () => {
 		}
 	};
 
-	const testBackend = async () => {
-		let res = await Api.post('/test_backend/816723/hello', { userId: userId });
-		console.log('result:');
-		console.log(res);
-	};
-
 	const handleSubmit = (event) => {
 		event.preventDefault();
-		if (checkNotNull()) {
-			if (password === confirmPassword) {
-				if (checkStrongPassword(password)) {
-					console.log(`"Success!"`);
-					testBackend(); // change to registerNewUser()
-				} else {
-					alert('This password is too weak!');
-				}
-			} else {
-				alert("Passwords don't match!");
-			}
-		} else {
-			alert('Please enter your information!');
-		}
+		testBackend();
 	};
 
 	const handleUserIdChange = (event) => {

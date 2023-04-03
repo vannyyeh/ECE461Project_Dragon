@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 import pymongo
 import os
@@ -20,106 +20,88 @@ ProjectDragon = database.Database("mongodb+srv://ProjectDragonUser:Z62xa7Vhmw3kH
 if __name__ == "__main__":
     app.run()
 
-@app.route('/test_backend/<int:projectID>/<string:userID>', methods=['POST'])
-def testBackend(projectID, userID):
-    
-    response = jsonify(
-        msg="" + str(projectID) + ": " + str(userID) + str(mongodbClient),
-        status=200
-    )
 
+
+@app.route('/add_user/', methods=['POST'])
+def add_user():
+    username = request.json.get("username")
+    password = request.json.get("password")
+    userID = request.json.get("userID")
+    response = ProjectDragon.add_user(username, password, userID)
     return response
 
-
-@app.route('/join_project/<int:projectID>/<string:userID>', methods=['PATCH'])
-def join_project(projectId, userId):
-    response = ProjectDragon.user_join_project(projectId, userId)
-    response.headers.add('Access-Control-Allow-Origin', 'http://localhost')
+@app.route('/delete_user/<string:userID>', methods=['DELETE'])
+def delete_user(userID):
+    response = ProjectDragon.delete_user(userID)
     return response
 
-
-@app.route('/leave_project/<int:projectID>/<string:userID>', methods=['PATCH'])
-def leave_project(projectId, userId):
-    response = ProjectDragon.user_leave_project(projectId, userId)
-    response.headers.add('Access-Control-Allow-Origin', 'http://localhost')
+@app.route('/add_project/', methods=['POST'])
+def add_project():
+    name = request.json.get("name")
+    desc = request.json.get("desc")
+    projectID = request.json.get("projectID")
+    response = ProjectDragon.add_project(name, desc, projectID)
     return response
 
-
-@app.route("/create_new_project/<string:projectName>/<string:projectID>/", methods=['POST'])
-def create_new_project(projectName, desc, projectID, users):
-    print("creating new project")
-    response = ProjectDragon.add_project(projectName, desc, projectID, users)
-    response.headers.add('Access-Control-Allow-Origin', 'http://localhost')    
+@app.route('/delete_project/<string:projectID>', methods=['DELETE'])
+def delete_project(projectID):
+    response = ProjectDragon.delete_project(projectID)
     return response
 
-
-@app.route("/check_login_attempt/<string:username>/<string:userID>", methods=["GET"])
-def check_login_attempt(username, password, userID):
-    response = None
-    targetUser = ProjectDragon.get_user(userID)
-
-    if targetUser is not None:
-
-        correctUsername = username == targetUser.get(str(username))
-        correctPassword = password == targetUser.get(str(password))
-        correctLogin = correctUsername and correctPassword
-
-        if correctLogin:
-            response = jsonify(
-                msg="Login Success",
-                result=True,
-                status=200
-            )
-            return response
-        else:
-            response = jsonify(
-                msg="Incorrect Login",
-                result=False,
-                status=400
-            )
-            return response
-
-    else:
-        response = jsonify(
-            msg=userID + " does not exist",
-            result=False,
-            status=204
-        )
-        return response
-
-@app.route("/create_user/<string:username>/<string:userID>", methods=["POST"])
-def create_user(username, password, userID, projects):
-    print("creating new user")
-    response = ProjectDragon.add_user(username, password, userID, projects)
-    response.headers.add('Access-Control-Allow-Origin', 'http://localhost')
+@app.route('/add_hardware_set/', methods=['POST'])
+def add_hardware_set():
+    hwID = request.json.get("hwID")
+    name = request.json.get("name")
+    capacity = request.json.get("capacity")
+    availability = request.json.get("availability")
+    response = ProjectDragon.add_hardware_set(hwID, name, capacity, availability)
     return response
 
+@app.route('/patch_hardware_set/', methods=['PATCH'])
+def patch_hardware_set():
+    hwID = request.json.get("hwID")
+    projectID = request.json.get("projectID")
+    availabilityChange = request.json.get("availabilityChange")
+    name = request.json.get("name")
+    response = ProjectDragon.patch_hardware_set(hwID, projectID, availabilityChange, name)
+    return response
 
-@app.route('/checkin/<string:projectID>/<string:hwsetsname>/<int:qty>')
-def checkIn_hardware(projectId, hwsetname, qty):
-    hwset_query = {"Name": hwsetname}
-    hwset_document = hwsets.find(hwset_query)
-    available_units = hwset_document["Availability"]
-    capacity_units = hwset_document["Capacity"]
-    project = projects.find_one({"ProjectID": projectId})
-    project_hardware = project['HWSets']
+@app.route('/delete_hardware_set/<string:hardwareID>', methods=['DELETE'])
+def delete_hardware_set(hardwareID):
+    response = ProjectDragon.delete_hardware_set(hardwareID)
+    return response
 
-    project = projects.find({"ProjectID": projectId})
-    if qty > capacity_units:
-        qty_checked_in = capacity_units - available_units
-    else:
-        qty_checked_in = qty
+@app.route('/user_join_project/', methods=['PATCH'])
+def user_join_project():
+    projectID = request.json.get("projectID")
+    userID = request.json.get("userID")
+    response = ProjectDragon.user_join_project(projectID, userID)
+    return response
 
+@app.route('/user_leave_project/', methods=['PATCH'])
+def user_leave_project():
+    projectID = request.json.get("projectID")
+    userID = request.json.get("userID")
+    response = ProjectDragon.user_leave_project(projectID, userID)
+    return response
 
-    projects.update_one({"ProjectID": projectId}, {"$set": {"HWSet": project_hardware}})
-    hwsets.update_one({"Name": hwsetname}, {"$set": {"Availability": qty_checked_in + available_units}})
+@app.route('/authorize_user/', methods=['PATCH'])
+def authorize_user():
+    projectID = request.json.get("projectID")
+    userID = request.json.get("userID")
+    response = ProjectDragon.authorize_user(projectID, userID)
+    return response
 
-    return {
-        'projectId': projectId,
-        'hwsetsname': hwsetname,
-        'qty': qty,
-    }
+@app.route('/unauthorize_user/', methods=['PATCH'])
+def unauthorize_user():
+    projectID = request.json.get("projectID")
+    userID = request.json.get("userID")
+    response = ProjectDragon.unauthorize_user(projectID, userID)
+    return response
 
-@app.route('/checkout/<string:projectID>/<string:hwsetsname>/<int:qty>')
-def checkOut_hardware(projectId, hwsetname, qty):
-    return 'come back and edit'
+@app.route('/login_user/', methods=['get'])
+def login_user():
+    userID = request.json.get("userID")
+    password = request.json.get("password")
+    response = ProjectDragon.login_user(userID, password)
+    return response
