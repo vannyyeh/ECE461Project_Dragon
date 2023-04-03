@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TextField, Button } from '@mui/material';
 import { PageDiv, WrapperRegister, FormRegister } from './styles/GlobalStyles';
-
+import Api from './Api.js';
 export const Register = () => {
 	const [userId, setUserId] = useState('');
 	const [username, setUsername] = useState('');
@@ -17,35 +17,23 @@ export const Register = () => {
 	const checkStrongPassword = (password) => {
 		if (password.length >= 12) {
 			if (/^[A-Za-z0-9]*$/.test(password)) {
-				console.log('It is a strong password');
 				return true;
 			}
 		}
-		console.log('not strong');
 		return false;
+	};
+
+	const checkNotNull = () => {
+		if (userId === '' || username === '' || password === '' || confirmPassword === '') {
+			return false;
+		} else {
+			return true;
+		}
 	};
 
 	const handleSubmit = (event) => {
 		event.preventDefault();
-		console.log(password);
-		console.log(confirmPassword);
-		if (password === confirmPassword) {
-			if (checkStrongPassword(password)) {
-				console.log(`"Success!"`);
-			} else {
-				console.log("Passwords don't match!");
-			}
-		} else {
-		    fetch(`/register/${username}/${userId}/${password}/${confirmPassword}`)
-            .then((response) => response.json())
-            .then((data) => {
-             if (data.response === 'New user created') {
-               setUser(data.userId)
-                  localStorage.setItem('user', data.userId)
-                }
-                alert(data.response)
-            })
-		}
+		testBackend();
 	};
 
 	const handleUserIdChange = (event) => {
@@ -70,28 +58,20 @@ export const Register = () => {
 				<div>
 					<h1>Welcome to Registration</h1>
 					<form onSubmit={handleSubmit}>
-						<FormRegister >
-						    <p>
-                            Enter User ID:
-                            </p>
+						<FormRegister>
+							<p>Enter User ID:</p>
 							<TextField label='User ID' value={userId} onChange={handleUserIdChange} />
 						</FormRegister>
 						<FormRegister>
-							<p>
-                            Enter Username:
-                            </p>
+							<p>Enter Username:</p>
 							<TextField label='Username' value={username} onChange={handleUsernameChange} />
 						</FormRegister>
 						<FormRegister>
-							<p>
-                            Enter password:
-                            </p>
+							<p>Enter password:</p>
 							<TextField label='Password' value={password} onChange={handlePasswordChange} />
 						</FormRegister>
 						<FormRegister>
-							<p>
-                            Confirm your password:
-                            </p>
+							<p>Confirm your password:</p>
 							<TextField
 								label='Confirm Password'
 								value={confirmPassword}
@@ -99,11 +79,10 @@ export const Register = () => {
 							/>
 						</FormRegister>
 						<FormRegister>
-							<Button type='submit' variant='contained' color='primary' >
+							<Button type='submit' variant='contained' color='primary'>
 								Register New Account
 							</Button>
 						</FormRegister>
-
 					</form>
 					<a style={{ cursor: 'pointer' }} onClick={() => navigateHome()}>
 						Back to Home Page
