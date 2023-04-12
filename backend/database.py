@@ -2,6 +2,7 @@ from flask import Flask, jsonify
 import json
 import pymongo
 import databaseModule
+import encrypt
 
 
 class Database:
@@ -116,6 +117,7 @@ class Database:
     def add_user(self, username, password, userID, projects = []):
 
         response = None
+        password = encrypt.encrypt(password)
         
         new_user = {    
             'userID': userID,
@@ -152,7 +154,8 @@ class Database:
 
     def login_user(self, userID, password):
         user = self.__usersCollections.find_one({"userID": userID})
-        if user["password"] == password:
+        realPassword = encrypt.decrypt(user["password"])
+        if realPassword == password:
             response = jsonify(
                 msg="User " + userID + " logged in",
             )
