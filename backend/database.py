@@ -164,8 +164,6 @@ class Database:
             )
             response.status=204
             return response
-        
-
 
     def delete_user(self, userID):
         response = None
