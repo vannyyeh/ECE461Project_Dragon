@@ -4,6 +4,7 @@ import { TextField, Button } from '@mui/material';
 import { PageDiv, WrapperRegister, FormRegister } from './styles/GlobalStyles';
 import Api from './Api.js';
 export const Register = () => {
+    const [errorMessage, setErrorMessage] = useState('');
 	const [userId, setUserId] = useState('');
 	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
@@ -32,8 +33,38 @@ export const Register = () => {
 	};
 
 	const handleSubmit = (event) => {
-		event.preventDefault();
-		testBackend();
+
+        if (userId === '') {
+            setErrorMessage('Please enter a user ID');
+            return;
+        }
+
+        if (username === '') {
+            setErrorMessage('Please enter a username');
+            return;
+        }
+
+        if (!password) {
+            setErrorMessage('Please enter a password');
+            return;
+        }
+
+        if (!confirmPassword) {
+            setErrorMessage('Please enter a confirmed password');
+            return;
+        }
+
+        if (!(confirmPassword === password)){
+            setErrorMessage('Passwords do not match');
+            return;
+        }
+
+        fetch("/login_user/").then((response) => response.json()).then((data) => {
+            alert("" + data.response)
+        })
+        .catch((error) => {
+            setErrorMessage('Error with Registration');
+        });
 	};
 
 	const handleUserIdChange = (event) => {
@@ -57,6 +88,7 @@ export const Register = () => {
 			<WrapperRegister>
 				<div>
 					<h1>Welcome to Registration</h1>
+					<div style = {{color:"red"}}> {errorMessage} </div>
 					<form onSubmit={handleSubmit}>
 						<FormRegister>
 							<p>Enter User ID:</p>
