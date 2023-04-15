@@ -3,7 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { TextField, Button } from '@mui/material';
 import { PageDiv, WrapperRegister, FormRegister } from './styles/GlobalStyles';
 import Api from './Api.js';
+import axios from 'axios';
+
 export const Register = () => {
+    const [response, setResponse] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 	const [userId, setUserId] = useState('');
 	const [username, setUsername] = useState('');
@@ -24,47 +27,41 @@ export const Register = () => {
 		return false;
 	};
 
-	const checkNotNull = () => {
-		if (userId === '' || username === '' || password === '' || confirmPassword === '') {
-			return false;
-		} else {
-			return true;
-		}
-	};
+	function handleSubmit() {
 
-	const handleSubmit = (event) => {
+	    event.preventDefault();
+	    // Stop page refresh
+	    setErrorMessage("Please");
 
-        if (userId === '') {
+        if (!userId) {
             setErrorMessage('Please enter a user ID');
-            return;
         }
-
-        if (username === '') {
+        else if (!username) {
             setErrorMessage('Please enter a username');
-            return;
         }
-
-        if (!password) {
+        else if (!password) {
             setErrorMessage('Please enter a password');
-            return;
         }
-
-        if (!confirmPassword) {
+        else if (!confirmPassword) {
             setErrorMessage('Please enter a confirmed password');
-            return;
         }
-
-        if (!(confirmPassword === password)){
+        else if (!(confirmPassword === password)){
             setErrorMessage('Passwords do not match');
-            return;
+        }
+        else {
+            setErrorMessage('passed');
         }
 
-        fetch("/login_user/").then((response) => response.json()).then((data) => {
-            alert("" + data.response)
+        Api
+        .post('/add_user/', {
+            params: {
+                username: username
+                password: password
+                userID: userId
+            }
+        }).then(reports => {
+        }).catch((error) => {
         })
-        .catch((error) => {
-            setErrorMessage('Error with Registration');
-        });
 	};
 
 	const handleUserIdChange = (event) => {
