@@ -23,9 +23,8 @@ export const LandingPage = () => {
 			return;
 		}
 
-		fetch(`$/login/${username}/${password}`)
-			.then((response) => response.json())
-			.then((data) => {
+		fetch("/login_user/")
+			.then((response) => response.json()).then((data) => {
 				if (data.response === 'successfully logged in') {
 					localStorage.setItem('user', data.userID);
 					navigate('./components/Projects');

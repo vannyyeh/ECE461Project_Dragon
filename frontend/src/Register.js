@@ -3,7 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { TextField, Button } from '@mui/material';
 import { PageDiv, WrapperRegister, FormRegister } from './styles/GlobalStyles';
 import Api from './Api.js';
+import axios from 'axios';
+
 export const Register = () => {
+    const [response, setResponse] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
 	const [userId, setUserId] = useState('');
 	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
@@ -23,17 +27,41 @@ export const Register = () => {
 		return false;
 	};
 
-	const checkNotNull = () => {
-		if (userId === '' || username === '' || password === '' || confirmPassword === '') {
-			return false;
-		} else {
-			return true;
-		}
-	};
+	function handleSubmit() {
 
-	const handleSubmit = (event) => {
-		event.preventDefault();
-		testBackend();
+	    event.preventDefault();
+	    // Stop page refresh
+	    setErrorMessage("Please");
+
+        if (!userId) {
+            setErrorMessage('Please enter a user ID');
+        }
+        else if (!username) {
+            setErrorMessage('Please enter a username');
+        }
+        else if (!password) {
+            setErrorMessage('Please enter a password');
+        }
+        else if (!confirmPassword) {
+            setErrorMessage('Please enter a confirmed password');
+        }
+        else if (!(confirmPassword === password)){
+            setErrorMessage('Passwords do not match');
+        }
+        else {
+            setErrorMessage('passed');
+        }
+
+        Api
+        .post('/add_user/', {
+            params: {
+                username: username
+                password: password
+                userID: userId
+            }
+        }).then(reports => {
+        }).catch((error) => {
+        })
 	};
 
 	const handleUserIdChange = (event) => {
@@ -57,6 +85,7 @@ export const Register = () => {
 			<WrapperRegister>
 				<div>
 					<h1>Welcome to Registration</h1>
+					<div style = {{color:"red"}}> {errorMessage} </div>
 					<form onSubmit={handleSubmit}>
 						<FormRegister>
 							<p>Enter User ID:</p>

@@ -19,7 +19,7 @@
   "version": "1.0.0",
   "description": "The frontend server for our project.",
   "main": "index.js",
-  "proxy": "http://127.0.0.1:8000",
+  "proxy": "http://localhost:5123",
   "scripts": {
     "start": "webpack serve --config ./webpack.dev.js",
     "build": "webpack --config webpack.prod.js"
