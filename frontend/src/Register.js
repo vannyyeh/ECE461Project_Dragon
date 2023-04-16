@@ -55,9 +55,9 @@ export const Register = () => {
         Api
         .post('/add_user/', {
             params: {
-                username: username
-                password: password
-                userID: userId
+                username: username,
+                password: password,
+                userID: userId,
             }
         }).then(reports => {
         }).catch((error) => {
