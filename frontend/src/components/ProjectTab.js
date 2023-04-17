@@ -9,7 +9,6 @@ const ProjectTab = ({ title, description, users }) => {
 	const [quantity1, setQuantity1] = useState(50);
 	const [quantity2, setQuantity2] = useState(0);
 
-	const TitleHeader = () => <Header>Title:</Header>;
 	return (
 		<ProjectTabContainer>
 			<LeftContainer>
