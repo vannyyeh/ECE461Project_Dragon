@@ -57,7 +57,7 @@
 
 - How to run the app?
 1. Start the flask server by running in the /backend directory:
-`flask run`
+`flask run -h localhost -p 5123 --debug`
 2. Start the React development server by navigating to /frontend directory:
 `npm start`
 
