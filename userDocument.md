@@ -72,6 +72,7 @@ and see the user interface now:)
 
 
 ### Hardware Check-in/ Check-out Page UI
+![image](./project-screenshot.png)
 - In the project portal page, the user will be able to see the project it has and authorized users, 
 hardware sets, and a join/leave project button
 - The user must join the project to check in and check out the hardware set
