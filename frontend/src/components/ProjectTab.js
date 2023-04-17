@@ -1,12 +1,13 @@
 import { Button, TextField } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Api from '../Api';
 import styled from 'styled-components';
+import { useAuthentification } from '../AuthentificationContext';
+import { useNavigate } from 'react-router-dom';
 
 const ProjectTab = ({ title, description }) => {
 	const [quantity1, setQuantity1] = useState(50);
 	const [quantity2, setQuantity2] = useState(0);
-
 	return (
 		<ProjectTabContainer>
 			<LeftContainer>
@@ -66,12 +67,14 @@ const CheckButton = ({ text, tempVal, quantity, setQuantity, inVal, title }) => 
 		setQuantity(parseInt(quantity) + parseInt(inVal) * tempVal);
 		if (tempVal !== 0) {
 			if (parseInt(inVal) === 1) {
-				console.log('sending check in request with ' + title + ' and quantity ' + quantity);
-				console.log(`/check_in/${title}/${tempVal}/`);
-				let res = await Api.get(`/check_in/${title}/${tempVal}/`);
-				alert(res.data.msg);
+				// need to route through hwID, and projectID
+				let res = await Api.patch('/patch_hardware_set/', {
+					hwID: hwID,
+					projectID: projectID,
+					availabilityChange: availabilityChange,
+				});
 			} else {
-				let res = await Api.get(`/check_out/${title}/${tempVal}/`);
+				let res = await Api.get(`/patch_hardware_set/${title}/${tempVal}/`);
 				alert(res.data.msg);
 			}
 		}

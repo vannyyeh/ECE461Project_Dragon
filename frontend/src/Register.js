@@ -6,8 +6,8 @@ import Api from './Api.js';
 import axios from 'axios';
 
 export const Register = () => {
-    const [response, setResponse] = useState('');
-    const [errorMessage, setErrorMessage] = useState('');
+	const [response, setResponse] = useState('');
+	const [errorMessage, setErrorMessage] = useState('');
 	const [userId, setUserId] = useState('');
 	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
@@ -27,41 +27,34 @@ export const Register = () => {
 		return false;
 	};
 
-	function handleSubmit() {
+	const handleSubmit = async (event) => {
+		event.preventDefault();
 
-	    event.preventDefault();
-	    // Stop page refresh
-	    setErrorMessage("Please");
-
-        if (!userId) {
-            setErrorMessage('Please enter a user ID');
-        }
-        else if (!username) {
-            setErrorMessage('Please enter a username');
-        }
-        else if (!password) {
-            setErrorMessage('Please enter a password');
-        }
-        else if (!confirmPassword) {
-            setErrorMessage('Please enter a confirmed password');
-        }
-        else if (!(confirmPassword === password)){
-            setErrorMessage('Passwords do not match');
-        }
-        else {
-            setErrorMessage('passed');
-        }
-
-        Api
-        .post('/add_user/', {
-            params: {
-                username: username
-                password: password
-                userID: userId
-            }
-        }).then(reports => {
-        }).catch((error) => {
-        })
+		if (!userId) {
+			setErrorMessage('Please enter a user ID');
+		} else if (!username) {
+			setErrorMessage('Please enter a username');
+		} else if (!password) {
+			setErrorMessage('Please enter a password');
+		} else if (!confirmPassword) {
+			setErrorMessage('Please confirm your password');
+		} else if (!(confirmPassword === password)) {
+			setErrorMessage('Passwords do not match');
+		} else {
+			let res = await Api.post('/add_user/', {
+				userID: userId,
+				username: username,
+				password: password,
+			});
+			console.log(res.status);
+			if (res.status === 201) {
+				navigate(`/projects`);
+			} else if (res.status === 204) {
+				alert('account already exists');
+			} else {
+				alert('an error occurred when registering you.');
+			}
+		}
 	};
 
 	const handleUserIdChange = (event) => {
@@ -85,7 +78,7 @@ export const Register = () => {
 			<WrapperRegister>
 				<div>
 					<h1>Welcome to Registration</h1>
-					<div style = {{color:"red"}}> {errorMessage} </div>
+					<div style={{ color: 'red' }}> {errorMessage} </div>
 					<form onSubmit={handleSubmit}>
 						<FormRegister>
 							<p>Enter User ID:</p>

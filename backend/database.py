@@ -4,7 +4,6 @@ import pymongo
 import databaseModule
 import encrypt
 
-
 class Database:
 
     # Initialization Begins
@@ -154,18 +153,60 @@ class Database:
 
     def login_user(self, userID, password):
         user = self.__usersCollections.find_one({"userID": userID})
-        realPassword = encrypt.decrypt(user["password"])
-        if realPassword == password:
+        if (user):
+            realPassword = encrypt.decrypt(user["password"])
+            if realPassword == password:
+                response = jsonify(
+                    msg="User " + userID + " logged in",
+                    userID = userID
+                )
+                response.status=200
+                return response
+            else:
+                response = jsonify(
+                    msg="User " + userID + " login unsuccessful",
+                )
+                response.status=204
+                return response
+        else:
+            print("no user")
             response = jsonify(
-                msg="User " + userID + " logged in",
+                msg="User " + userID + " does not exist"
+            )
+            response.status=400
+            return response
+
+    def get_user_projects(self, userID):
+        user = self.__usersCollections.find_one({"userID": userID})
+        if (user):
+            print("projects")
+            print(user["projects"])
+            retArr = []
+            for projectID in user["projects"]:
+                project = self.__projectsCollections.find_one({"projectID": projectID})
+                grabbedHwSets = project["grabHW"]
+
+                for grabbedHwSet in grabbedHwSets:
+                    hwSet = self.__hwCollections.find_one({"hwID": grabbedHwSet})
+                    print(hwSet)
+
+                retArr.append({
+                    "projectID": project["projectID"],
+                    "name": project["name"],
+                    "desc": project["desc"],
+                    "users": project["users"],
+                    "grabHW": project["grabHW"]
+                })
+            response = jsonify(
+                projects=retArr
             )
             response.status=200
             return response
         else:
             response = jsonify(
-                msg="User " + userID + " login unsuccessful",
+                msg='User ' + userID + ' does not exist'
             )
-            response.status=204
+            response.status=400
             return response
 
     def delete_user(self, userID):

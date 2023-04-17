@@ -3,17 +3,21 @@ import { useNavigate, Link } from 'react-router-dom';
 import { InputBox } from './inputs/InputBox';
 import { CheckInButton, Header1, Header2, PageDiv, Wrapper, InputBoxContainer } from './styles/GlobalStyles';
 import { Stack, TextField, Button } from '@mui/material';
+import Api from './Api';
+import { useAuthentification } from './AuthentificationContext';
 
 export const LandingPage = () => {
 	let navigate = useNavigate();
 
-	const [username, setUsername] = useState('');
+	const [userID, setUserID] = useState('');
 	const [password, setPassword] = useState('');
 	const [errorMessage, setErrorMessage] = useState('');
 	//const url = process.env.REACT_APP_BASE_URL
 
-	const handleLogin = () => {
-		if (!username) {
+	const { loginUser } = useAuthentification();
+
+	const handleLogin = async () => {
+		if (!userID) {
 			setErrorMessage('Please enter a username');
 			return;
 		}
@@ -22,19 +26,21 @@ export const LandingPage = () => {
 			setErrorMessage('Please enter a password');
 			return;
 		}
-
-		fetch("/login_user/")
-			.then((response) => response.json()).then((data) => {
-				if (data.response === 'successfully logged in') {
-					localStorage.setItem('user', data.userID);
-					navigate('./components/Projects');
-				} else {
-					setErrorMessage(data.response);
-				}
-			})
-			.catch((error) => {
-				setErrorMessage('Error');
+		try {
+			let res = await Api.patch('/login_user/', {
+				userID: userID,
+				password: password,
 			});
+
+			if (res.status === 200) {
+				loginUser(userID);
+				navigate('/projects');
+			} else if (res.status === 204) {
+				alert('Incorrect userID or password');
+			}
+		} catch (error) {
+			alert('userID does not exist');
+		}
 	};
 
 	function registerNavigation() {
@@ -52,15 +58,15 @@ export const LandingPage = () => {
 					<h1>Welcome to the Dragon Check-in System!</h1>
 					<Stack>
 						<InputBoxContainer>
-							<p>Username:</p>
+							<p>User ID:</p>
 							<TextField
-								value={username}
+								value={userID}
 								type='string'
 								id='outlined-basic'
-								label='Enter Your Username'
+								label='Enter Your User ID'
 								variant='outlined'
 								onChange={(e) => {
-									setUsername(e.target.value);
+									setUserID(e.target.value);
 									setErrorMessage('');
 								}}
 							/>
