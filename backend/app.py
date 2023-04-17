@@ -1,8 +1,5 @@
-from flask import Flask, jsonify, request
+from flask import Flask, request
 from flask_cors import CORS
-import pymongo
-import os
-import json
 import database
 
 
@@ -21,13 +18,17 @@ if __name__ == "__main__":
     app.run()
 
 
-
 @app.route('/add_user/', methods=['POST'])
 def add_user():
     username = request.json.get("username")
     password = request.json.get("password")
     userID = request.json.get("userID")
     response = ProjectDragon.add_user(username, password, userID)
+    return response
+
+@app.route('/get_user_projects/<userID>', methods=['GET'])
+def get_user_projects(userID):
+    response = ProjectDragon.get_user_projects(userID)
     return response
 
 @app.route('/delete_user/<string:userID>', methods=['DELETE'])
@@ -99,7 +100,7 @@ def unauthorize_user():
     response = ProjectDragon.unauthorize_user(projectID, userID)
     return response
 
-@app.route('/login_user/', methods=['get'])
+@app.route('/login_user/', methods=['PATCH'])
 def login_user():
     userID = request.json.get("userID")
     password = request.json.get("password")
