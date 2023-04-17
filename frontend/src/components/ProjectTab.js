@@ -5,14 +5,16 @@ import styled from 'styled-components';
 import { useAuthentification } from '../AuthentificationContext';
 import { useNavigate } from 'react-router-dom';
 
-const ProjectTab = ({ title, description }) => {
+const ProjectTab = ({ title, description, users }) => {
 	const [quantity1, setQuantity1] = useState(50);
 	const [quantity2, setQuantity2] = useState(0);
+
 	return (
 		<ProjectTabContainer>
 			<LeftContainer>
 				<CompressText style={{ fontSize: '25px', width: '225px' }}>{title}</CompressText>
 				<CompressText style={{ fontSize: '15px', width: '110px' }}>{description}</CompressText>
+				<CompressText style={{ fontSize: '15px', width: '110px' }}>{users.join(', ')}</CompressText>
 			</LeftContainer>
 			<RightContainer>
 				<div style={{ display: 'flex', flexDirection: 'column', paddingLeft: '25px', fontSize: '25px' }}>
