@@ -29,7 +29,6 @@ export const Register = () => {
 
 	const handleSubmit = async (event) => {
 		event.preventDefault();
-
 		if (!userId) {
 			setErrorMessage('Please enter a user ID');
 		} else if (!username) {
