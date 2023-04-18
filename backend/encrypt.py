@@ -3,8 +3,6 @@ SHIFT = 5
 DIRECTION = 1
 
 def encrypt(text):
-    print('getting to the encryption')
-    print(text)
     return encryptND(text, SHIFT, DIRECTION)
 
 def encryptND(user_password, N, D):
