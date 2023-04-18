@@ -120,6 +120,7 @@ class Database:
         
         new_user = {    
             'userID': userID,
+            'admin': False,
             'username': username,
             'password': password,
             'projects': projects
@@ -158,7 +159,8 @@ class Database:
             if realPassword == password:
                 response = jsonify(
                     msg="User " + userID + " logged in",
-                    userID = userID
+                    userID = userID,
+                    admin = user.get('admin')
                 )
                 response.status=200
                 return response
@@ -169,7 +171,6 @@ class Database:
                 response.status=204
                 return response
         else:
-            print("no user")
             response = jsonify(
                 msg="User " + userID + " does not exist"
             )
@@ -179,23 +180,30 @@ class Database:
     def get_user_projects(self, userID):
         user = self.__usersCollections.find_one({"userID": userID})
         if (user):
-            print("projects")
-            print(user["projects"])
             retArr = []
             for projectID in user["projects"]:
                 project = self.__projectsCollections.find_one({"projectID": projectID})
                 grabbedHwSets = project["grabHW"]
 
+                hwArr = []
+                print("grabbed hw sets:")
+                print(grabbedHwSets)
                 for grabbedHwSet in grabbedHwSets:
-                    hwSet = self.__hwCollections.find_one({"hwID": grabbedHwSet})
-                    print(hwSet)
+                    hwSet = self.__hwCollections.find_one({"hwID": grabbedHwSet[0]})
+                    hwArr.append({
+                        "hwID": hwSet["hwID"],
+                        "name": hwSet["name"],
+                        "capacity": hwSet["capacity"],
+                        "availability": hwSet["availability"],
+                        "tiedProjects": hwSet["tiedProjects"],
+                    })
 
                 retArr.append({
                     "projectID": project["projectID"],
                     "name": project["name"],
                     "desc": project["desc"],
                     "users": project["users"],
-                    "grabHW": project["grabHW"]
+                    "grabHW": hwArr
                 })
             response = jsonify(
                 projects=retArr
@@ -205,6 +213,42 @@ class Database:
         else:
             response = jsonify(
                 msg='User ' + userID + ' does not exist'
+            )
+            response.status=400
+            return response
+        
+    def get_all_projects(self, admin):
+        if (admin):
+            projects = self.__projectsCollections.find()
+
+            projectIDs = []
+            for project in projects:
+                projectIDs.append(project.get("projectID"))
+
+            retArr = []
+            for projectID in projectIDs:
+                project = self.__projectsCollections.find_one({"projectID": projectID})
+                grabbedHwSets = project["grabHW"]
+
+                # for grabbedHwSet in grabbedHwSets:
+                #     hwSet = self.__hwCollections.find_one({"hwID": grabbedHwSet})
+
+                retArr.append({
+                    "projectID": project["projectID"],
+                    "name": project["name"],
+                    "desc": project["desc"],
+                    "users": project["users"],
+                    "grabHW": project["grabHW"]
+                })
+
+            response = jsonify(
+                projects=retArr
+            )
+            response.status=200
+            return response
+        else:
+            response = jsonify(
+                msg='User is not an admin!'
             )
             response.status=400
             return response
@@ -252,7 +296,6 @@ class Database:
         
         if hardwareSetExistence:
             # hardware_set already exists with that ID
-            print("hardware set exists")
             response = jsonify(
                 msg="Hardware Set " + hwID + " already exists",
             )
@@ -260,7 +303,6 @@ class Database:
             return response
         else:
             # no hardware_set with that ID
-            print("creating hardware set")
             self.__hwCollections.insert_one(new_hardware_set)
             response = jsonify(
                 msg="Hardware Set " + hwID + " added",
@@ -268,6 +310,40 @@ class Database:
             response.status=201
             return response
         
+    def get_all_hardware_sets(self, admin):
+        if (admin):
+            hardware_sets = self.__hwCollections.find()
+            hardwareSetIDs = []
+            for hardware_set in hardware_sets:
+                hardwareSetIDs.append(hardware_set.get("hwID"))
+
+            retArr = []
+            for hardwareSetID in hardwareSetIDs:
+                hardware_set = self.__hwCollections.find_one({"hwID": hardwareSetID})
+                tied_projects = hardware_set["tiedProjects"]
+
+                # for tied_project in tied_projects:
+                #     project = self.__projectsCollections.find_one({"projectID": tied_project})
+
+                retArr.append({
+                    "hwID": hardware_set["hwID"],
+                    "name": hardware_set["name"],
+                    "capacity": hardware_set["capacity"],
+                    "availability": hardware_set["availability"],
+                    "tiedProjects": hardware_set["tiedProjects"]
+                })
+            response = jsonify(
+                projects=retArr
+            )
+            response.status=200
+            return response
+        else:
+            response = jsonify(
+                msg='User is not an admin!'
+            )
+            response.status=400
+            return response
+
     def patch_hardware_set(self, hwID, projectID, strAvailabilityChange, name = None):
 
         response = None
@@ -339,7 +415,7 @@ class Database:
                 
 
             hardware_set = self.__hwCollections.find_one({"hwID": hwID})
-            print(hardware_set)
+            
             response = jsonify(
                 msg="Hardware Set " + hwID + " updated!",
             )
@@ -407,14 +483,14 @@ class Database:
         projectExistance = self.project_existence(projectID)
         
         if projectExistance:
-            # user already exists with that ID
+            # project already exists with that ID
             response = jsonify(
                 msg="Project " + projectID + " already exists",
             )
             response.status=204
             return response
         else:
-            # no user with that ID
+            # no project with that ID
             self.__projectsCollections.insert_one(new_project)
             response = jsonify(
                 msg="Project " + projectID + " added",
@@ -466,7 +542,6 @@ class Database:
 
         if projectExistance and userExistance:
             user = self.__usersCollections.find_one({"userID": userID})
-            print(user)
             acceptableUsers = self.__projectsCollections.find_one({"projectID": projectID}).get("users")
             
             in_acceptable_users = False
@@ -477,15 +552,20 @@ class Database:
 
             if in_acceptable_users:
                 joinedProjects = user.get('projects', [])
-                print("joined projects")
-                print(joinedProjects)
                 # add project to user projects
 
-                if projectID in joinedProjects:
+
+                alreadyJoined = False
+                for joinedProjectID in joinedProjects:
+                    if projectID == joinedProjectID:
+                        alreadyJoined = True
+
+                if alreadyJoined:
                     response = jsonify(
                         msg="" + projectID + " already in " + userID + " joined projects",
-                        status=204
+                        
                     )
+                    response.status = 204
                     return response
 
                 joinedProjects.append(projectID)
@@ -493,23 +573,23 @@ class Database:
 
                 response = jsonify(
                     msg=userID + " Joined " + projectID,
-                    status=200
                 )
+                response.status = 200
                 return response
 
             else:
                 # user is not authorized
                 response = jsonify(
                     msg=userID + " Not Authorized to Join " + projectID,
-                    status=401
                 )
+                response.status = 401
                 return response
 
         else:
             response = jsonify(
                 msg="" + str(projectID) + " or " + userID + " does not exist",
-                status=204
             )
+            response.status = 204
             return response
 
     def user_leave_project(self, projectID, userID):
@@ -521,15 +601,14 @@ class Database:
         if projectExistance and userExistance:
 
             user = self.__usersCollections.find_one({"userID": userID})
-            print(user)
             joinedProjects = user.get('projects', [])
             # remove project from user projects
 
             if projectID not in joinedProjects:
                 response = jsonify(
                     msg=projectID + " not in " + userID + " joined projects",
-                    status=204
                 )
+                response.status = 204
                 return response
 
             joinedProjects.remove(projectID)
@@ -537,17 +616,15 @@ class Database:
 
             response = jsonify(
                 msg=userID + " Left " + projectID,
-                status=200
             )
-
+            response.status = 200
             return response
 
         else:
             response = jsonify(
                 msg=projectID + " does not exist",
-                status=204
             )
-
+            response.status = 204
             return response
 
     def unauthorize_user(self, projectID, userID):
@@ -559,15 +636,14 @@ class Database:
         if projectExistance and userExistance:
 
             targetProject = self.__projectsCollections.find_one({"projectID": projectID})
-            print(targetProject)
             authorizedUsers = targetProject.get('users', [])
             # remove project from user projects
 
             if userID not in authorizedUsers:
                 response = jsonify(
                     msg=userID + " not in " + projectID + " authoized users",
-                    status=204
                 )
+                response.status = 204
                 return response
 
             authorizedUsers.remove(userID)
@@ -575,17 +651,15 @@ class Database:
 
             response = jsonify(
                 msg=userID + " Unauthorized For " + projectID,
-                status=200
             )
-
+            response.status = 200
             return response
 
         else:
             response = jsonify(
                 msg=projectID + " does not exist",
-                status=204
             )
-
+            response.status = 204
             return response
 
     def authorize_user(self, projectID, userID):
@@ -596,15 +670,14 @@ class Database:
         if (projectExistance) and (userExistance):
 
             targetProject = self.__projectsCollections.find_one({"projectID": projectID})
-            print(targetProject)
             authorizedUsers = targetProject.get('users', [])
             # remove project from user projects
 
             if userID in authorizedUsers:
                 response = jsonify(
                     msg=userID + " already in " + projectID + " authorized users",
-                    status=204
                 )
+                response.status = 204
                 return response
 
             authorizedUsers.append(userID)
@@ -612,13 +685,13 @@ class Database:
 
             response = jsonify(
                 msg=userID + " Authorized For " + projectID,
-                status=200
             )
+            response.status = 200
             return response
 
         else:
             response = jsonify(
                 msg=projectID + " does not exist",
-                status=204
             )
+            response.status = 204
             return response

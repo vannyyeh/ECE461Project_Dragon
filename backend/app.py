@@ -31,6 +31,11 @@ def get_user_projects(userID):
     response = ProjectDragon.get_user_projects(userID)
     return response
 
+@app.route('/get_all_projects/<admin>', methods=['GET'])
+def get_all_projects(admin):
+    response = ProjectDragon.get_all_projects(admin)
+    return response
+
 @app.route('/delete_user/<string:userID>', methods=['DELETE'])
 def delete_user(userID):
     response = ProjectDragon.delete_user(userID)
@@ -41,7 +46,9 @@ def add_project():
     name = request.json.get("name")
     desc = request.json.get("desc")
     projectID = request.json.get("projectID")
-    response = ProjectDragon.add_project(name, desc, projectID)
+    users = request.json.get("users")
+    grabHW = request.json.get("grabHW")
+    response = ProjectDragon.add_project(name, desc, projectID, users, grabHW)
     return response
 
 @app.route('/delete_project/<string:projectID>', methods=['DELETE'])
@@ -49,12 +56,17 @@ def delete_project(projectID):
     response = ProjectDragon.delete_project(projectID)
     return response
 
+@app.route('/get_all_hardware_sets/<admin>', methods=['GET'])
+def get_all_hardware_sets(admin):
+    response = ProjectDragon.get_all_hardware_sets(admin)
+    return response
+
 @app.route('/add_hardware_set/', methods=['POST'])
 def add_hardware_set():
     hwID = request.json.get("hwID")
     name = request.json.get("name")
-    capacity = request.json.get("capacity")
-    availability = request.json.get("availability")
+    capacity = int(request.json.get("capacity"))
+    availability = int(request.json.get("availability"))
     response = ProjectDragon.add_hardware_set(hwID, name, capacity, availability)
     return response
 

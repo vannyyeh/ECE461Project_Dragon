@@ -6,10 +6,16 @@ export const PageDiv = styled.div`
 `;
 
 export const Header1 = styled.div`
+	display: flex;
+	flex-direction: in-line;
+	align-items: center;
+	justify-content: center;
+	margin-left; auto;
+	margin-right: auto;
+	text-align: center;
 	font-family: 'Copperplate', 'Courier New', sans-serif;
 	font-size: 30px;
 	color: #663399;
-	text-align: center;
 `;
 
 export const Header2 = styled.div`
@@ -20,7 +26,7 @@ export const Header2 = styled.div`
 
 export const Wrapper = styled.div`
 	background: #ffe4b5;
-	margin: 24px auto;
+	margin: 12px auto;
 	padding: 24px;
 	border-radius: 20px;
 	width: 60%;
@@ -55,7 +61,7 @@ export const WrapperRegister = styled.div`
 	background: #ffe4b5;
 	display: flex;
 	flex-direction: column;
-	alignItems: center;
+	alignitems: center;
 	margin: 25px auto;
 	padding: 24px;
 	border-radius: 20px;
@@ -63,7 +69,28 @@ export const WrapperRegister = styled.div`
 `;
 
 export const InputBoxContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+`;
+
+export const NavigationHeader = styled.div`
+	display: flex;
+	flex: center;
+	flex-direction: in-line;
+	align-items: center;
+	justify-content: space-between;
+	height: 50px;
+	border-bottom: 3px solid red;
+	width: 100%;
+	margin-bottom: 25px;
+`;
+
+export const NavigationPage = styled.div`
+	width: 120px;
+	font-size: 35px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	cursor: pointer;
 `;
