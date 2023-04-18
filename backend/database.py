@@ -186,8 +186,6 @@ class Database:
                 grabbedHwSets = project["grabHW"]
 
                 hwArr = []
-                print("grabbed hw sets:")
-                print(grabbedHwSets)
                 for grabbedHwSet in grabbedHwSets:
                     hwSet = self.__hwCollections.find_one({"hwID": grabbedHwSet[0]})
                     hwArr.append({
