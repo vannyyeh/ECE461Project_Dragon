@@ -2,7 +2,8 @@
 
 ### Introduction
 - An application that allows users to check in and out for their hardware set within the project ID
-![image](./overview-screenshot.png)
+- (Landing Page Overview)
+![image](./landing_screenshot.png)
 
 ### 3 Hows? Of Getting Started & Installation
 - How to clone the project?
@@ -61,14 +62,14 @@
 2. Start the React development server by navigating to /frontend directory:
 `npm start`
 
-By following these steps, it should be able to run your React and Flask applications on the local machine 
+By following these steps, the application should be able to run your React and Flask applications on the local machine 
 and see the user interface now:)
 
 
 ### Sign In/Sign Up UI
 - Users can log into their accounts by providing their user ID and password
 - If the user does not have an existing account, the user will follow the "I am a new user" to register the account
-- After the user register one account, it will need to navigate back to the main landing page to log in
+- After the user register one account, it will navigate back to the landing page by defalut log in by having the new username and password
 
 
 ### Hardware Check-in/ Check-out Page UI
@@ -78,4 +79,13 @@ hardware sets, and a join/leave project button
 - The user must join the project to check in and check out the hardware set
 - If the user request to check out more hardware than the available set, the maximum amount of hardware will be checked 
 out to that project, vice versa
+![image](./addingproject_screenshot.png)
+- The user can add the project to their account if they have permission
 
+### Admin Portal 
+![image](./admin_screenshot.png)
+- Admin portal allows adminstrator to manage users and hardware, project
+
+### Sign Out
+![image](./signout_screenshot.png)
+- User is allowed to sign out from the account to log in back by other account or etc..
